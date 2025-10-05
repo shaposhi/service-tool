@@ -26,3 +26,138 @@ li {
   border-radius: 4px;
 }
 
+/* Layout */
+.header {
+  background-color: #282c34;
+  padding: 16px 8px;
+  color: white;
+}
+
+.main-content {
+  max-width: 95%;
+  margin: 24px auto;
+  padding: 0 16px;
+}
+
+.card {
+  background: #fff;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  padding: 16px;
+  margin-bottom: 16px;
+  box-shadow: 0 1px 2px rgba(0,0,0,0.04);
+}
+
+.button {
+  background-color: #2563eb;
+  color: #fff;
+  border: none;
+  padding: 8px 12px;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* Tabs */
+.tabs {
+  display: flex;
+  gap: 8px;
+  border-bottom: 1px solid #e5e7eb;
+  background: #fff;
+  padding: 8px 16px;
+}
+
+.tab {
+  background: transparent;
+  border: none;
+  padding: 10px 12px;
+  border-bottom: 2px solid transparent;
+  cursor: pointer;
+}
+
+.tab.active {
+  border-color: #2563eb;
+  color: #2563eb;
+  font-weight: 600;
+}
+
+/* Log Notifications form/table */
+.ln-form {
+  background: #fff;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  padding: 12px;
+  margin-bottom: 16px;
+}
+
+.ln-row {
+  display: flex;
+  gap: 12px;
+  align-items: end;
+  flex-wrap: wrap;
+}
+
+.ln-field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 180px;
+}
+
+.ln-field.small {
+  min-width: 120px;
+}
+
+.ln-field input,
+.ln-field select {
+  padding: 8px;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+}
+
+.ln-actions {
+  margin-left: auto;
+}
+
+.ln-pagination {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.ln-error {
+  color: #b91c1c;
+  background: #fee2e2;
+  border: 1px solid #fecaca;
+  padding: 8px 12px;
+  border-radius: 6px;
+  margin-bottom: 12px;
+}
+
+.ln-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.ln-table th,
+.ln-table td {
+  border-bottom: 1px solid #e5e7eb;
+  padding: 10px 8px;
+}
+
+.ln-table thead th {
+  background: #f9fafb;
+  text-align: left;
+}
+
+.ln-footer {
+  text-align: right;
+  margin-top: 8px;
+  color: #6b7280;
+}
+
