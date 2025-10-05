@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import './App.css';
 import LogNotifications from './LogNotifications';
+import ColumnMappings from './ColumnMappings';
 
 function App() {
   const [message, setMessage] = useState('');
@@ -43,6 +44,12 @@ function App() {
           onClick={() => setActiveTab('log')}
         >
           Log Notifications
+        </button>
+        <button
+          className={`tab ${activeTab === 'mappings' ? 'active' : ''}`}
+          onClick={() => setActiveTab('mappings')}
+        >
+          Column Mappings
         </button>
       </nav>
 
@@ -95,6 +102,12 @@ function App() {
         {activeTab === 'log' && (
           <div className="card">
             <LogNotifications />
+          </div>
+        )}
+
+        {activeTab === 'mappings' && (
+          <div className="card">
+            <ColumnMappings />
           </div>
         )}
       </main>

@@ -1,7 +1,7 @@
 package com.example.servicetools.config;
 
-import com.example.servicetools.model.LogNotification;
 import com.example.servicetools.service.LogNotificationService;
+import com.example.servicetools.service.ColumnToObjectMappingService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.stereotype.Component;
@@ -12,11 +12,17 @@ public class DataInitializer implements CommandLineRunner {
     @Autowired
     private LogNotificationService logNotificationService;
 
+    @Autowired
+    private ColumnToObjectMappingService columnToObjectMappingService;
+
     @Override
     public void run(String... args) throws Exception {
         // Initialize with sample data if database is empty
         if (logNotificationService.getLogNotificationCount() == 0) {
             createSampleData();
+        }
+        if (columnToObjectMappingService.count() == 0) {
+            createSampleMappings();
         }
     }
 
@@ -83,5 +89,14 @@ public class DataInitializer implements CommandLineRunner {
         );
         
         System.out.println("Sample data initialized with " + logNotificationService.getLogNotificationCount() + " log notifications");
+    }
+
+    private void createSampleMappings() {
+        columnToObjectMappingService.create("$.user.id", "USER_ID", "UID,USR_ID");
+        columnToObjectMappingService.create("$.user.name", "USER_NAME", "USERNAME,USR_NAME");
+        columnToObjectMappingService.create("$.order.number", "ORDER_NO", "ORD_NUM,ORDER_ID");
+        columnToObjectMappingService.create("$.order.total", "ORDER_TOTAL", "TOTAL,AMOUNT");
+        columnToObjectMappingService.create("$.meta.timestamp", "EVENT_TIME", "TS,TIMESTAMP");
+        System.out.println("Initialized 5 ColumnToObjectMapping sample records");
     }
 }
