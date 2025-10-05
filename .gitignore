@@ -54,7 +54,7 @@ ehthumbs.db
 Thumbs.db
 
 # Node.js (for frontend)
-frontend/
+frontend/node/
 frontend/node_modules/
 frontend/build/
 frontend/.env
