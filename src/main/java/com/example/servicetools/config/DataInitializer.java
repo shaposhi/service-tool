@@ -2,9 +2,12 @@ package com.example.servicetools.config;
 
 import com.example.servicetools.service.LogNotificationService;
 import com.example.servicetools.service.ColumnToObjectMappingService;
+import com.example.servicetools.model.LogNotification;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.stereotype.Component;
+
+import java.time.ZonedDateTime;
 
 @Component
 public class DataInitializer implements CommandLineRunner {
@@ -27,67 +30,129 @@ public class DataInitializer implements CommandLineRunner {
     }
 
     private void createSampleData() {
-        // Create sample log notifications
-        logNotificationService.createLogNotification(
-            "Application started successfully", 
-            "INFO", 
-            "Application"
-        );
-        
-        logNotificationService.createLogNotification(
-            "Database connection established", 
-            "INFO", 
-            "Database"
-        );
-        
-        logNotificationService.createLogNotification(
-            "User authentication failed for user: admin", 
-            "WARN", 
-            "Security"
-        );
-        
-        logNotificationService.createLogNotification(
-            "Memory usage is above 80%", 
-            "WARN", 
-            "System"
-        );
-        
-        logNotificationService.createLogNotification(
-            "Failed to connect to external service", 
-            "ERROR", 
-            "External API"
-        );
-        
-        logNotificationService.createLogNotification(
-            "Critical system failure detected", 
-            "ERROR", 
-            "System"
-        );
-        
-        logNotificationService.createLogNotification(
-            "User logged in successfully", 
-            "INFO", 
-            "Authentication"
-        );
-        
-        logNotificationService.createLogNotification(
-            "Cache cleared successfully", 
-            "INFO", 
-            "Cache"
-        );
-        
-        logNotificationService.createLogNotification(
-            "Invalid request received", 
-            "WARN", 
-            "API"
-        );
-        
-        logNotificationService.createLogNotification(
-            "Backup completed successfully", 
-            "INFO", 
-            "Backup"
-        );
-        
+        // Create sample log notifications aligned with new model
+        ZonedDateTime now = ZonedDateTime.now();
+
+        logNotificationService.createLogNotification(new LogNotification(
+            null,           // id (auto)
+            1001L,          // partyId
+            "SYNC",         // cMode
+            now.minusMinutes(5), // lastUpdateTime
+            "Application",  // source
+            now.minusMinutes(6), // receivedTime
+            now.minusMinutes(4), // completedTime
+            true,            // succesfullyProcessed
+            null             // stackTrace
+        ));
+
+        logNotificationService.createLogNotification(new LogNotification(
+            null,
+            2002L,
+            "ASYNC",
+            now.minusMinutes(15),
+            "Database",
+            now.minusMinutes(16),
+            now.minusMinutes(14),
+            true,
+            null
+        ));
+
+        logNotificationService.createLogNotification(new LogNotification(
+            null,
+            3003L,
+            "ASYNC",
+            now.minusMinutes(25),
+            "Security",
+            now.minusMinutes(26),
+            now.minusMinutes(24),
+            false,
+            "com.example.security.AuthException: invalid credentials"
+        ));
+
+        logNotificationService.createLogNotification(new LogNotification(
+            null,
+            4004L,
+            "SYNC",
+            now.minusMinutes(35),
+            "System",
+            now.minusMinutes(36),
+            now.minusMinutes(34),
+            false,
+            "java.lang.OutOfMemoryError: Java heap space"
+        ));
+
+        logNotificationService.createLogNotification(new LogNotification(
+            null,
+            5005L,
+            "ASYNC",
+            now.minusMinutes(45),
+            "External API",
+            now.minusMinutes(46),
+            now.minusMinutes(44),
+            false,
+            "java.net.ConnectException: Connection timed out"
+        ));
+
+        logNotificationService.createLogNotification(new LogNotification(
+            null,
+            6006L,
+            "SYNC",
+            now.minusMinutes(55),
+            "Authentication",
+            now.minusMinutes(56),
+            now.minusMinutes(54),
+            true,
+            null
+        ));
+
+        logNotificationService.createLogNotification(new LogNotification(
+            null,
+            7007L,
+            "ASYNC",
+            now.minusMinutes(65),
+            "Cache",
+            now.minusMinutes(66),
+            now.minusMinutes(64),
+            true,
+            null
+        ));
+
+        logNotificationService.createLogNotification(new LogNotification(
+            null,
+            8008L,
+            "SYNC",
+            now.minusMinutes(75),
+            "API",
+            now.minusMinutes(76),
+            now.minusMinutes(74),
+            false,
+            "org.example.api.BadRequestException: invalid payload"
+        ));
+
+        logNotificationService.createLogNotification(new LogNotification(
+            null,
+            9009L,
+            "ASYNC",
+            now.minusMinutes(85),
+            "Backup",
+            now.minusMinutes(86),
+            now.minusMinutes(84),
+            true,
+            null
+        ));
+
+        logNotificationService.createLogNotification(new LogNotification(
+            null,
+            10010L,
+            "SYNC",
+            now.minusMinutes(95),
+            "System",
+            now.minusMinutes(96),
+            now.minusMinutes(94),
+            false,
+            "java.lang.IllegalStateException: unexpected state"
+        ));
+
         System.out.println("Sample data initialized with " + logNotificationService.getLogNotificationCount() + " log notifications");
     }
 

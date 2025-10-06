@@ -1,15 +1,20 @@
 package com.example.servicetools.model;
 
-import jakarta.persistence.*;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.time.LocalDateTime;
+import java.time.ZonedDateTime;
 
 @Data
-@AllArgsConstructor
 @NoArgsConstructor
+@AllArgsConstructor
 @Entity
 @Table(name = "log_notifications")
 public class LogNotification {
@@ -18,22 +23,28 @@ public class LogNotification {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(nullable = false, length = 1000)
-    private String message;
+    @Column(name = "PARTY_ID")
+    private Long partyId;
 
-    @Column(nullable = false)
-    private LocalDateTime timestamp;
+    @Column(name = "CMODE")
+    private String cMode;
 
-    @Column(length = 50)
-    private String level;
+    @Column(name = "LAST_UPDATE_TIME")
+    private ZonedDateTime lastUpdateTime;
 
-    @Column(length = 100)
+    @Column(name = "SOURCE")
     private String source;
 
-    public LogNotification(String message, String level, String source) {
-        this.message = message;
-        this.level = level;
-        this.source = source;
-        this.timestamp = LocalDateTime.now();
-    }
+    @Column(name = "RECEIVED_TIME")
+    private ZonedDateTime receivedTime;
+
+    @Column(name = "COMPLETED_TIME")
+    private ZonedDateTime completedTime;
+
+    @Column(name = "IS_SUCCESSFUL")
+    private Boolean succesfullyProcessed;
+
+    @Column(name = "STACK_TRACE")
+    private String stackTrace;
+
 }

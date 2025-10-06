@@ -8,43 +8,50 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
-import java.time.LocalDateTime;
+import java.time.ZonedDateTime;
 import java.util.List;
 
 @Repository
 public interface LogNotificationRepository extends JpaRepository<LogNotification, Long> {
 
-    // Find by level
-    List<LogNotification> findByLevel(String level);
-    Page<LogNotification> findByLevel(String level, Pageable pageable);
+    // By cMode
+    //List<LogNotification> findByCMode(String cMode);
+    //Page<LogNotification> findByCMode(String cMode, Pageable pageable);
 
-    // Find by source
+    // By source
     List<LogNotification> findBySource(String source);
     Page<LogNotification> findBySource(String source, Pageable pageable);
 
-    // Find by level and source
-    List<LogNotification> findByLevelAndSource(String level, String source);
-    Page<LogNotification> findByLevelAndSource(String level, String source, Pageable pageable);
+    // By partyId
+    List<LogNotification> findByPartyId(Long partyId);
+    Page<LogNotification> findByPartyId(Long partyId, Pageable pageable);
 
-    // Find by timestamp range
-    List<LogNotification> findByTimestampBetween(LocalDateTime startTime, LocalDateTime endTime);
-    Page<LogNotification> findByTimestampBetween(LocalDateTime startTime, LocalDateTime endTime, Pageable pageable);
+    // By success flag
+    List<LogNotification> findBySuccesfullyProcessed(Boolean succesfullyProcessed);
+    Page<LogNotification> findBySuccesfullyProcessed(Boolean succesfullyProcessed, Pageable pageable);
 
-    // Find by message containing text
-    List<LogNotification> findByMessageContainingIgnoreCase(String message);
-    Page<LogNotification> findByMessageContainingIgnoreCase(String message, Pageable pageable);
+    // By lastUpdateTime range
+    List<LogNotification> findByLastUpdateTimeBetween(ZonedDateTime start, ZonedDateTime end);
+    Page<LogNotification> findByLastUpdateTimeBetween(ZonedDateTime start, ZonedDateTime end, Pageable pageable);
 
-    // Custom query to find recent notifications
-    @Query("SELECT l FROM LogNotification l WHERE l.timestamp >= :since ORDER BY l.timestamp DESC")
-    List<LogNotification> findRecentNotifications(@Param("since") LocalDateTime since);
-    
-    @Query("SELECT l FROM LogNotification l WHERE l.timestamp >= :since ORDER BY l.timestamp DESC")
-    Page<LogNotification> findRecentNotifications(@Param("since") LocalDateTime since, Pageable pageable);
+    // By receivedTime range
+    List<LogNotification> findByReceivedTimeBetween(ZonedDateTime start, ZonedDateTime end);
+    Page<LogNotification> findByReceivedTimeBetween(ZonedDateTime start, ZonedDateTime end, Pageable pageable);
 
-    // Custom query to count notifications by level
-    @Query("SELECT l.level, COUNT(l) FROM LogNotification l GROUP BY l.level")
-    List<Object[]> countByLevel();
+    // By completedTime range
+    List<LogNotification> findByCompletedTimeBetween(ZonedDateTime start, ZonedDateTime end);
+    Page<LogNotification> findByCompletedTimeBetween(ZonedDateTime start, ZonedDateTime end, Pageable pageable);
 
-    // Delete old notifications
-    void deleteByTimestampBefore(LocalDateTime cutoffTime);
+    // Recent based on receivedTime
+    @Query("SELECT l FROM LogNotification l WHERE l.receivedTime >= :since ORDER BY l.receivedTime DESC")
+    List<LogNotification> findRecentSince(@Param("since") ZonedDateTime since);
+    @Query("SELECT l FROM LogNotification l WHERE l.receivedTime >= :since ORDER BY l.receivedTime DESC")
+    Page<LogNotification> findRecentSince(@Param("since") ZonedDateTime since, Pageable pageable);
+
+    // Count by cMode
+    //@Query("SELECT l.cMode, COUNT(l) FROM LogNotification l GROUP BY l.cMode")
+    //List<Object[]> countByCMode();
+
+    // Delete old by receivedTime
+    void deleteByReceivedTimeBefore(ZonedDateTime cutoffTime);
 }

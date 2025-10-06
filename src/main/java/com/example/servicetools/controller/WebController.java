@@ -9,6 +9,10 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.ZonedDateTime;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Optional;
 
@@ -29,14 +33,10 @@ public class WebController {
 
     // Create a new log notification
     @PostMapping
-    public ResponseEntity<LogNotification> createLogNotification(@RequestBody LogNotificationRequest request) {
+    public ResponseEntity<LogNotification> createLogNotification(@RequestBody LogNotification request) {
         try {
-            LogNotification notification = logNotificationService.createLogNotification(
-                request.getMessage(), 
-                request.getLevel(), 
-                request.getSource()
-            );
-            return ResponseEntity.status(HttpStatus.CREATED).body(notification);
+            LogNotification saved = logNotificationService.createLogNotification(request);
+            return ResponseEntity.status(HttpStatus.CREATED).body(saved);
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
         }
@@ -54,7 +54,7 @@ public class WebController {
     public ResponseEntity<Page<LogNotification>> getAllLogNotificationsPaginated(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size,
-            @RequestParam(defaultValue = "timestamp") String sortBy,
+            @RequestParam(defaultValue = "receivedTime") String sortBy,
             @RequestParam(defaultValue = "desc") String sortDirection) {
         
         Page<LogNotification> notifications = logNotificationService.getAllLogNotifications(
@@ -70,27 +70,6 @@ public class WebController {
                           .orElse(ResponseEntity.notFound().build());
     }
 
-    // Get log notifications by level
-    @GetMapping("/level/{level}")
-    public ResponseEntity<List<LogNotification>> getLogNotificationsByLevel(@PathVariable String level) {
-        List<LogNotification> notifications = logNotificationService.getLogNotificationsByLevel(level);
-        return ResponseEntity.ok(notifications);
-    }
-
-    // Get log notifications by level with pagination
-    @GetMapping("/level/{level}/paginated")
-    public ResponseEntity<Page<LogNotification>> getLogNotificationsByLevelPaginated(
-            @PathVariable String level,
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "10") int size,
-            @RequestParam(defaultValue = "timestamp") String sortBy,
-            @RequestParam(defaultValue = "desc") String sortDirection) {
-        
-        Page<LogNotification> notifications = logNotificationService.getLogNotificationsByLevel(
-            level, page, size, sortBy, sortDirection);
-        return ResponseEntity.ok(notifications);
-    }
-
     // Get log notifications by source
     @GetMapping("/source/{source}")
     public ResponseEntity<List<LogNotification>> getLogNotificationsBySource(@PathVariable String source) {
@@ -104,7 +83,7 @@ public class WebController {
             @PathVariable String source,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size,
-            @RequestParam(defaultValue = "timestamp") String sortBy,
+            @RequestParam(defaultValue = "receivedTime") String sortBy,
             @RequestParam(defaultValue = "desc") String sortDirection) {
         
         Page<LogNotification> notifications = logNotificationService.getLogNotificationsBySource(
@@ -112,59 +91,110 @@ public class WebController {
         return ResponseEntity.ok(notifications);
     }
 
-    // Search log notifications by message
-    @GetMapping("/search")
-    public ResponseEntity<List<LogNotification>> searchLogNotifications(@RequestParam String message) {
-        List<LogNotification> notifications = logNotificationService.searchLogNotificationsByMessage(message);
+    // Get log notifications by partyId (non-paginated)
+    @GetMapping("/party/{partyId}")
+    public ResponseEntity<List<LogNotification>> getLogNotificationsByPartyId(@PathVariable Long partyId) {
+        List<LogNotification> notifications = logNotificationService.getLogNotificationsByPartyId(partyId);
         return ResponseEntity.ok(notifications);
     }
 
-    // Search log notifications by message with pagination
-    @GetMapping("/search/paginated")
-    public ResponseEntity<Page<LogNotification>> searchLogNotificationsPaginated(
-            @RequestParam String message,
+    @GetMapping("/party/{partyId}/paginated")
+    public ResponseEntity<Page<LogNotification>> getLogNotificationsByPartyIdPaginated(
+            @PathVariable Long partyId,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size,
-            @RequestParam(defaultValue = "timestamp") String sortBy,
+            @RequestParam(defaultValue = "receivedTime") String sortBy,
             @RequestParam(defaultValue = "desc") String sortDirection) {
         
-        Page<LogNotification> notifications = logNotificationService.searchLogNotificationsByMessage(
-            message, page, size, sortBy, sortDirection);
+        Page<LogNotification> notifications = logNotificationService.getLogNotificationsByPartyId(
+            partyId, page, size, sortBy, sortDirection);
         return ResponseEntity.ok(notifications);
     }
 
-    // Get recent log notifications
+    // Get log notifications by success flag
+    @GetMapping("/success/{flag}")
+    public ResponseEntity<List<LogNotification>> getLogNotificationsBySuccess(@PathVariable Boolean flag) {
+        List<LogNotification> notifications = logNotificationService.getLogNotificationsBySuccess(flag);
+        return ResponseEntity.ok(notifications);
+    }
+
+    // Get log notifications by success flag with pagination
+    @GetMapping("/success/{flag}/paginated")
+    public ResponseEntity<Page<LogNotification>> getLogNotificationsBySuccessPaginated(
+            @PathVariable Boolean flag,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(defaultValue = "receivedTime") String sortBy,
+            @RequestParam(defaultValue = "desc") String sortDirection) {
+
+        Page<LogNotification> notifications = logNotificationService.getLogNotificationsBySuccess(
+            flag, page, size, sortBy, sortDirection);
+        return ResponseEntity.ok(notifications);
+    }
+
+    // Get by received time range
+    @GetMapping("/received-range")
+    public ResponseEntity<List<LogNotification>> getByReceivedRange(
+            @RequestParam String start,
+            @RequestParam String end) {
+        ZonedDateTime startZdt = parseLocalDateTimeToZoned(start);
+        ZonedDateTime endZdt = parseLocalDateTimeToZoned(end);
+        List<LogNotification> notifications = logNotificationService.getByReceivedRange(startZdt, endZdt);
+        return ResponseEntity.ok(notifications);
+    }
+
+    // Get by received time range with pagination
+    @GetMapping("/received-range/paginated")
+    public ResponseEntity<Page<LogNotification>> getByReceivedRangePaginated(
+            @RequestParam String start,
+            @RequestParam String end,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(defaultValue = "receivedTime") String sortBy,
+            @RequestParam(defaultValue = "desc") String sortDirection) {
+
+        ZonedDateTime startZdt = parseLocalDateTimeToZoned(start);
+        ZonedDateTime endZdt = parseLocalDateTimeToZoned(end);
+        Page<LogNotification> notifications = logNotificationService.getByReceivedRange(
+            startZdt, endZdt, page, size, sortBy, sortDirection);
+        return ResponseEntity.ok(notifications);
+    }
+
+    private ZonedDateTime parseLocalDateTimeToZoned(String value) {
+        if (value == null || value.isEmpty()) {
+            return null;
+        }
+        // Expecting input like "2025-10-04T19:52" from datetime-local
+        LocalDateTime ldt = LocalDateTime.parse(value, DateTimeFormatter.ISO_LOCAL_DATE_TIME);
+        return ldt.atZone(ZoneId.systemDefault());
+    }
+
+    // Get recent log notifications since a given time
     @GetMapping("/recent")
-    public ResponseEntity<List<LogNotification>> getRecentLogNotifications(@RequestParam(defaultValue = "24") int hours) {
-        List<LogNotification> notifications = logNotificationService.getRecentLogNotifications(hours);
+    public ResponseEntity<List<LogNotification>> getRecentLogNotifications(@RequestParam ZonedDateTime since) {
+        List<LogNotification> notifications = logNotificationService.getRecentSince(since);
         return ResponseEntity.ok(notifications);
     }
 
     // Get recent log notifications with pagination
     @GetMapping("/recent/paginated")
     public ResponseEntity<Page<LogNotification>> getRecentLogNotificationsPaginated(
-            @RequestParam(defaultValue = "24") int hours,
+            @RequestParam ZonedDateTime since,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size,
-            @RequestParam(defaultValue = "timestamp") String sortBy,
+            @RequestParam(defaultValue = "receivedTime") String sortBy,
             @RequestParam(defaultValue = "desc") String sortDirection) {
         
-        Page<LogNotification> notifications = logNotificationService.getRecentLogNotifications(
-            hours, page, size, sortBy, sortDirection);
+        Page<LogNotification> notifications = logNotificationService.getRecentSince(
+            since, page, size, sortBy, sortDirection);
         return ResponseEntity.ok(notifications);
     }
 
     // Update log notification
     @PutMapping("/{id}")
-    public ResponseEntity<LogNotification> updateLogNotification(@PathVariable Long id, @RequestBody LogNotificationRequest request) {
+    public ResponseEntity<LogNotification> updateLogNotification(@PathVariable Long id, @RequestBody LogNotification request) {
         try {
-            LogNotification updatedNotification = new LogNotification(
-                request.getMessage(), 
-                request.getLevel(), 
-                request.getSource()
-            );
-            
-            LogNotification result = logNotificationService.updateLogNotification(id, updatedNotification);
+            LogNotification result = logNotificationService.updateLogNotification(id, request);
             return ResponseEntity.ok(result);
         } catch (RuntimeException e) {
             return ResponseEntity.notFound().build();
@@ -196,28 +226,5 @@ public class WebController {
         return ResponseEntity.ok(count);
     }
 
-    // Get log notification count by level
-    @GetMapping("/count-by-level")
-    public ResponseEntity<List<Object[]>> getLogNotificationCountByLevel() {
-        List<Object[]> countByLevel = logNotificationService.getLogNotificationCountByLevel();
-        return ResponseEntity.ok(countByLevel);
-    }
-
-    // Inner class for request body
-    public static class LogNotificationRequest {
-        private String message;
-        private String level;
-        private String source;
-
-        // Getters and setters
-        public String getMessage() { return message; }
-        public void setMessage(String message) { this.message = message; }
-        
-        public String getLevel() { return level; }
-        public void setLevel(String level) { this.level = level; }
-        
-        public String getSource() { return source; }
-        public void setSource(String source) { this.source = source; }
-    }
 }
 

@@ -13,8 +13,10 @@ function formatDate(iso) {
 }
 
 export default function LogNotifications() {
-  const [message, setMessage] = useState('');
-  const [level, setLevel] = useState('');
+  const [partyId, setPartyId] = useState('');
+  const [success, setSuccess] = useState('');
+  const [start, setStart] = useState('');
+  const [end, setEnd] = useState('');
   const [source, setSource] = useState('');
   const [results, setResults] = useState([]);
   const [page, setPage] = useState(0);
@@ -38,14 +40,17 @@ export default function LogNotifications() {
       const params = new URLSearchParams();
       params.set('page', page.toString());
       params.set('size', size.toString());
-      params.set('sortBy', 'timestamp');
+      params.set('sortBy', 'receivedTime');
       params.set('sortDirection', 'desc');
 
-      if (message.trim()) {
-        url += '/search' + (isPaginated ? '/paginated' : '');
-        params.set('message', message.trim());
-      } else if (level.trim()) {
-        url += `/level/${encodeURIComponent(level.trim())}` + (isPaginated ? '/paginated' : '');
+      if (partyId.trim()) {
+        url += `/party/${encodeURIComponent(partyId.trim())}` + (isPaginated ? '/paginated' : '');
+      } else if (success.trim()) {
+        url += `/success/${encodeURIComponent(success.trim())}` + (isPaginated ? '/paginated' : '');
+      } else if (start.trim() && end.trim()) {
+        url += `/received-range` + (isPaginated ? '/paginated' : '');
+        params.set('start', start);
+        params.set('end', end);
       } else if (source.trim()) {
         url += `/source/${encodeURIComponent(source.trim())}` + (isPaginated ? '/paginated' : '');
       } else {
@@ -96,7 +101,11 @@ export default function LogNotifications() {
     fetchData();
   };
 
-  const levels = ['ERROR', 'WARN', 'INFO', 'DEBUG', 'TRACE'];
+  const successOptions = [
+    { label: 'Any', value: '' },
+    { label: 'Successful', value: 'true' },
+    { label: 'Failed', value: 'false' },
+  ];
 
   return (
     <div>
@@ -105,24 +114,41 @@ export default function LogNotifications() {
       <form className="ln-form" onSubmit={onSubmit}>
         <div className="ln-row">
           <div className="ln-field">
-            <label>Message contains</label>
+            <label>Party ID</label>
             <input
               type="text"
-              value={message}
-              onChange={(e) => setMessage(e.target.value)}
-              placeholder="Search text"
+              value={partyId}
+              onChange={(e) => setPartyId(e.target.value)}
+              placeholder="e.g. 1001"
             />
           </div>
 
           <div className="ln-field">
-            <label>Level</label>
-            <select value={level} onChange={(e) => setLevel(e.target.value)}>
-              <option value="">Any</option>
-              {levels.map((l) => (
-                <option key={l} value={l}>{l}</option>
+            <label>Success</label>
+            <select value={success} onChange={(e) => setSuccess(e.target.value)}>
+              {successOptions.map((o) => (
+                <option key={o.label} value={o.value}>{o.label}</option>
               ))}
             </select>
           </div>
+          <div className="ln-field">
+            <label>Received start</label>
+            <input
+              type="datetime-local"
+              value={start}
+              onChange={(e) => setStart(e.target.value)}
+            />
+          </div>
+
+          <div className="ln-field">
+            <label>Received end</label>
+            <input
+              type="datetime-local"
+              value={end}
+              onChange={(e) => setEnd(e.target.value)}
+            />
+          </div>
+
 
           <div className="ln-field">
             <label>Source</label>
@@ -184,10 +210,14 @@ export default function LogNotifications() {
           <thead>
             <tr>
               <th style={{ width: '80px' }}>ID</th>
-              <th style={{ width: '200px' }}>Timestamp</th>
-              <th style={{ width: '100px' }}>Level</th>
+              <th style={{ width: '200px' }}>Received</th>
+              <th style={{ width: '100px' }}>cMode</th>
+              <th style={{ width: '120px' }}>Party ID</th>
               <th style={{ width: '160px' }}>Source</th>
-              <th>Message</th>
+              <th style={{ width: '140px' }}>Completed</th>
+              <th style={{ width: '140px' }}>Last Update</th>
+              <th style={{ width: '120px' }}>Success</th>
+              <th>Stack Trace</th>
             </tr>
           </thead>
           <tbody>
@@ -201,10 +231,14 @@ export default function LogNotifications() {
             {results.map((r) => (
               <tr key={r.id}>
                 <td>{r.id}</td>
-                <td>{formatDate(r.timestamp)}</td>
-                <td>{r.level}</td>
+                <td>{formatDate(r.receivedTime)}</td>
+                <td>{r.cMode}</td>
+                <td>{r.partyId}</td>
                 <td>{r.source}</td>
-                <td style={{ textAlign: 'left' }}>{r.message}</td>
+                <td>{formatDate(r.completedTime)}</td>
+                <td>{formatDate(r.lastUpdateTime)}</td>
+                <td>{String(r.succesfullyProcessed)}</td>
+                <td style={{ textAlign: 'left', maxWidth: 420, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{r.stackTrace}</td>
               </tr>
             ))}
           </tbody>
