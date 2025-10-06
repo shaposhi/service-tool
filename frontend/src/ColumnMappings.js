@@ -11,6 +11,7 @@ export default function ColumnMappings() {
   const [formMainColumn, setFormMainColumn] = useState('');
   const [formAlternateColumns, setFormAlternateColumns] = useState('');
   const [editingId, setEditingId] = useState(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
   const [results, setResults] = useState([]);
   const [page, setPage] = useState(0);
   const [size, setSize] = useState(DEFAULT_PAGE_SIZE);
@@ -89,6 +90,7 @@ export default function ColumnMappings() {
 
   const startCreate = () => {
     resetForm();
+    setIsModalOpen(true);
   };
 
   const startEdit = (row) => {
@@ -98,7 +100,7 @@ export default function ColumnMappings() {
     setFormAlternateColumns(row.alternateColumnNames || '');
     setSaveError('');
     setSaveSuccess('');
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+    setIsModalOpen(true);
   };
 
   const onSave = async (e) => {
@@ -124,6 +126,7 @@ export default function ColumnMappings() {
       if (!res.ok) throw new Error(`Save failed: ${res.status}`);
       setSaveSuccess(editingId == null ? 'Created successfully' : 'Updated successfully');
       resetForm();
+      setIsModalOpen(false);
       // refresh list
       fetchData();
     } catch (err) {
@@ -137,59 +140,8 @@ export default function ColumnMappings() {
     <div>
       <h2 style={{ marginBottom: '16px' }}>Column Mappings</h2>
 
-      <div className="card" style={{ marginBottom: '16px' }}>
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-          <h3 style={{ margin: 0 }}>{editingId == null ? 'Create New Mapping' : `Edit Mapping #${editingId}`}</h3>
-          <div>
-            <button className="button" type="button" onClick={startCreate} disabled={saveLoading}>New</button>
-            {editingId != null && (
-              <button className="button" type="button" style={{ marginLeft: 8 }} onClick={resetForm} disabled={saveLoading}>Cancel</button>
-            )}
-          </div>
-        </div>
-        {saveError && <div className="ln-error" style={{ marginTop: 8 }}>{saveError}</div>}
-        {saveSuccess && <div style={{ marginTop: 8, color: '#065f46', background: '#d1fae5', border: '1px solid #a7f3d0', padding: '8px 12px', borderRadius: 6 }}>{saveSuccess}</div>}
-        <form className="ln-form" onSubmit={onSave}>
-          <div className="ln-row">
-            <div className="ln-field">
-              <label>JSON path</label>
-              <input
-                type="text"
-                value={formJsonPath}
-                onChange={(e) => setFormJsonPath(e.target.value)}
-                placeholder="$.path.to.field"
-                required
-              />
-            </div>
-
-            <div className="ln-field">
-              <label>Main column name</label>
-              <input
-                type="text"
-                value={formMainColumn}
-                onChange={(e) => setFormMainColumn(e.target.value)}
-                placeholder="MAIN_COLUMN"
-                required
-              />
-            </div>
-
-            <div className="ln-field">
-              <label>Alternate column names</label>
-              <input
-                type="text"
-                value={formAlternateColumns}
-                onChange={(e) => setFormAlternateColumns(e.target.value)}
-                placeholder="ALT1,ALT2"
-              />
-            </div>
-
-            <div className="ln-actions">
-              <button className="button" type="submit" disabled={saveLoading}>
-                {saveLoading ? 'Saving…' : (editingId == null ? 'Create' : 'Update')}
-              </button>
-            </div>
-          </div>
-        </form>
+      <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: 8 }}>
+        <button className="button" type="button" onClick={startCreate}>New Mapping</button>
       </div>
 
       <form className="ln-form" onSubmit={onSubmit}>
@@ -305,6 +257,60 @@ export default function ColumnMappings() {
           <div className="ln-footer">{totalElements} total</div>
         )}
       </div>
+
+      {isModalOpen && (
+        <div className="modal-overlay" onClick={() => { if (!saveLoading) setIsModalOpen(false); }}>
+          <div className="modal" role="dialog" aria-modal="true" onClick={(e) => e.stopPropagation()}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+              <h3 style={{ margin: 0 }}>{editingId == null ? 'Create New Mapping' : `Edit Mapping #${editingId}`}</h3>
+              <button className="button" type="button" onClick={() => setIsModalOpen(false)} disabled={saveLoading}>Close</button>
+            </div>
+            {saveError && <div className="ln-error" style={{ marginTop: 8 }}>{saveError}</div>}
+            {saveSuccess && <div style={{ marginTop: 8, color: '#065f46', background: '#d1fae5', border: '1px solid #a7f3d0', padding: '8px 12px', borderRadius: 6 }}>{saveSuccess}</div>}
+            <form className="ln-form" onSubmit={onSave}>
+              <div className="ln-row">
+                <div className="ln-field">
+                  <label>JSON path</label>
+                  <input
+                    type="text"
+                    value={formJsonPath}
+                    onChange={(e) => setFormJsonPath(e.target.value)}
+                    placeholder="$.path.to.field"
+                    required
+                  />
+                </div>
+
+                <div className="ln-field">
+                  <label>Main column name</label>
+                  <input
+                    type="text"
+                    value={formMainColumn}
+                    onChange={(e) => setFormMainColumn(e.target.value)}
+                    placeholder="MAIN_COLUMN"
+                    required
+                  />
+                </div>
+
+                <div className="ln-field">
+                  <label>Alternate column names</label>
+                  <input
+                    type="text"
+                    value={formAlternateColumns}
+                    onChange={(e) => setFormAlternateColumns(e.target.value)}
+                    placeholder="ALT1,ALT2"
+                  />
+                </div>
+
+                <div className="ln-actions">
+                  <button className="button" type="submit" disabled={saveLoading}>
+                    {saveLoading ? 'Saving…' : (editingId == null ? 'Create' : 'Update')}
+                  </button>
+                </div>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
