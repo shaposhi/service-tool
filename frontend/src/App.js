@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import './App.css';
 import LogNotifications from './LogNotifications';
 import ColumnMappings from './ColumnMappings';
+import ExcelUpload from './ExcelUpload';
 
 function App() {
   const [message, setMessage] = useState('');
@@ -50,6 +51,12 @@ function App() {
           onClick={() => setActiveTab('mappings')}
         >
           Column Mappings
+        </button>
+        <button
+          className={`tab ${activeTab === 'excel' ? 'active' : ''}`}
+          onClick={() => setActiveTab('excel')}
+        >
+          Excel Upload
         </button>
       </nav>
 
@@ -108,6 +115,12 @@ function App() {
         {activeTab === 'mappings' && (
           <div className="card">
             <ColumnMappings />
+          </div>
+        )}
+
+        {activeTab === 'excel' && (
+          <div className="card">
+            <ExcelUpload />
           </div>
         )}
       </main>
