@@ -162,6 +162,12 @@ public class DataInitializer implements CommandLineRunner {
         columnToObjectMappingService.create("$.order.number", "ORDER_NO", "ORD_NUM,ORDER_ID");
         columnToObjectMappingService.create("$.order.total", "ORDER_TOTAL", "TOTAL,AMOUNT");
         columnToObjectMappingService.create("$.meta.timestamp", "EVENT_TIME", "TS,TIMESTAMP");
-        System.out.println("Initialized 5 ColumnToObjectMapping sample records");
+
+        columnToObjectMappingService.create("$.ce", "CE", "");
+        columnToObjectMappingService.create("$.type", "CLIENT TYPE", "");
+        columnToObjectMappingService.create("$.isClient", "IS CLIENT", "");
+        columnToObjectMappingService.create("$.isVetted", "IS VETTED", "");
+        columnToObjectMappingService.create("$.country", "COI", "TBD");
+        System.out.println("Initialized 10 ColumnToObjectMapping sample records");
     }
 }
