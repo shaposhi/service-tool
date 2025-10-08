@@ -54,4 +54,34 @@ public interface LogNotificationRepository extends JpaRepository<LogNotification
 
     // Delete old by receivedTime
     void deleteByReceivedTimeBefore(ZonedDateTime cutoffTime);
+
+    // Search with multiple parameters
+    @Query("SELECT l FROM LogNotification l WHERE " +
+           "(:partyId IS NULL OR l.partyId = :partyId) AND " +
+           "(:success IS NULL OR l.succesfullyProcessed = :success) AND " +
+           "(:source IS NULL OR l.source = :source) AND " +
+           "(:cMode IS NULL OR l.cMode = :cMode) AND " +
+           "(:start IS NULL OR l.receivedTime >= :start) AND " +
+           "(:end IS NULL OR l.receivedTime <= :end)")
+    List<LogNotification> findByMultipleParams(@Param("partyId") Long partyId,
+                                               @Param("success") Boolean success,
+                                               @Param("source") String source,
+                                               @Param("cMode") String cMode,
+                                               @Param("start") ZonedDateTime start,
+                                               @Param("end") ZonedDateTime end);
+
+    @Query("SELECT l FROM LogNotification l WHERE " +
+           "(:partyId IS NULL OR l.partyId = :partyId) AND " +
+           "(:success IS NULL OR l.succesfullyProcessed = :success) AND " +
+           "(:source IS NULL OR l.source = :source) AND " +
+           "(:cMode IS NULL OR l.cMode = :cMode) AND " +
+           "(:start IS NULL OR l.receivedTime >= :start) AND " +
+           "(:end IS NULL OR l.receivedTime <= :end)")
+    Page<LogNotification> findByMultipleParams(@Param("partyId") Long partyId,
+                                               @Param("success") Boolean success,
+                                               @Param("source") String source,
+                                               @Param("cMode") String cMode,
+                                               @Param("start") ZonedDateTime start,
+                                               @Param("end") ZonedDateTime end,
+                                               Pageable pageable);
 }

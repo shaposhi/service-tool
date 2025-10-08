@@ -219,4 +219,23 @@ public class LogNotificationService {
     public List<LogNotification> createMultipleLogNotifications(List<LogNotification> notifications) {
         return repository.saveAll(notifications);
     }
+
+    // Search with multiple parameters
+    public List<LogNotification> searchByMultipleParams(Long partyId, Boolean success, String source, String cMode,
+                                                       ZonedDateTime start, ZonedDateTime end) {
+        return repository.findByMultipleParams(partyId, success, source, cMode, start, end);
+    }
+
+    public Page<LogNotification> searchByMultipleParams(Long partyId, Boolean success, String source, String cMode,
+                                                       ZonedDateTime start, ZonedDateTime end, Pageable pageable) {
+        return repository.findByMultipleParams(partyId, success, source, cMode, start, end, pageable);
+    }
+
+    public Page<LogNotification> searchByMultipleParams(Long partyId, Boolean success, String source, String cMode,
+                                                       ZonedDateTime start, ZonedDateTime end, 
+                                                       int page, int size, String sortBy, String sortDirection) {
+        Sort sort = Sort.by(Sort.Direction.fromString(sortDirection), sortBy);
+        Pageable pageable = PageRequest.of(page, size, sort);
+        return repository.findByMultipleParams(partyId, success, source, cMode, start, end, pageable);
+    }
 }

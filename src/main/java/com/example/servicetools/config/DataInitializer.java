@@ -66,7 +66,7 @@ public class DataInitializer implements CommandLineRunner {
             now.minusMinutes(26),
             now.minusMinutes(24),
             false,
-            "com.example.security.AuthException: invalid credentials"
+            "com.example.security.AuthException: invalid credentials. and very very very long stacktrace here, it is hard to imagine how long it can be."
         ));
 
         logNotificationService.createLogNotification(new LogNotification(

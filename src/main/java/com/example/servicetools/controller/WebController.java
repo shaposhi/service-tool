@@ -226,5 +226,59 @@ public class WebController {
         return ResponseEntity.ok(count);
     }
 
+    // Search with multiple parameters (non-paginated)
+    @GetMapping("/search")
+    public ResponseEntity<List<LogNotification>> searchLogNotifications(
+            @RequestParam(required = false) Long partyId,
+            @RequestParam(required = false) Boolean success,
+            @RequestParam(required = false) String source,
+            @RequestParam(required = false) String cMode,
+            @RequestParam(required = false) String start,
+            @RequestParam(required = false) String end) {
+        
+        ZonedDateTime startZdt = null;
+        ZonedDateTime endZdt = null;
+        
+        if (start != null && !start.trim().isEmpty()) {
+            startZdt = parseLocalDateTimeToZoned(start);
+        }
+        if (end != null && !end.trim().isEmpty()) {
+            endZdt = parseLocalDateTimeToZoned(end);
+        }
+        
+        List<LogNotification> notifications = logNotificationService.searchByMultipleParams(
+            partyId, success, source, cMode, startZdt, endZdt);
+        return ResponseEntity.ok(notifications);
+    }
+
+    // Search with multiple parameters (paginated)
+    @GetMapping("/search/paginated")
+    public ResponseEntity<Page<LogNotification>> searchLogNotificationsPaginated(
+            @RequestParam(required = false) Long partyId,
+            @RequestParam(required = false) Boolean success,
+            @RequestParam(required = false) String source,
+            @RequestParam(required = false) String cMode,
+            @RequestParam(required = false) String start,
+            @RequestParam(required = false) String end,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(defaultValue = "receivedTime") String sortBy,
+            @RequestParam(defaultValue = "desc") String sortDirection) {
+        
+        ZonedDateTime startZdt = null;
+        ZonedDateTime endZdt = null;
+        
+        if (start != null && !start.trim().isEmpty()) {
+            startZdt = parseLocalDateTimeToZoned(start);
+        }
+        if (end != null && !end.trim().isEmpty()) {
+            endZdt = parseLocalDateTimeToZoned(end);
+        }
+        
+        Page<LogNotification> notifications = logNotificationService.searchByMultipleParams(
+            partyId, success, source, cMode, startZdt, endZdt, page, size, sortBy, sortDirection);
+        return ResponseEntity.ok(notifications);
+    }
+
 }
 

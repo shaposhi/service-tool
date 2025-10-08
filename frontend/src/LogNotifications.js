@@ -18,6 +18,7 @@ export default function LogNotifications() {
   const [start, setStart] = useState('');
   const [end, setEnd] = useState('');
   const [source, setSource] = useState('');
+  const [cMode, setCMode] = useState('');
   const [results, setResults] = useState([]);
   const [page, setPage] = useState(0);
   const [size, setSize] = useState(DEFAULT_PAGE_SIZE);
@@ -25,6 +26,9 @@ export default function LogNotifications() {
   const [totalElements, setTotalElements] = useState(0);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [showModal, setShowModal] = useState(false);
+  const [selectedStackTrace, setSelectedStackTrace] = useState('');
+  const [copySuccess, setCopySuccess] = useState(false);
 
   const hasPagination = useMemo(() => {
     // We will use paginated endpoints by default to keep the UI consistent
@@ -43,21 +47,30 @@ export default function LogNotifications() {
       params.set('sortBy', 'receivedTime');
       params.set('sortDirection', 'desc');
 
+      // Add search parameters to query string for combination search
       if (partyId.trim()) {
-        url += `/party/${encodeURIComponent(partyId.trim())}` + (isPaginated ? '/paginated' : '');
-      } else if (success.trim()) {
-        url += `/success/${encodeURIComponent(success.trim())}` + (isPaginated ? '/paginated' : '');
-      } else if (start.trim() && end.trim()) {
-        url += `/received-range` + (isPaginated ? '/paginated' : '');
+        params.set('partyId', partyId.trim());
+      }
+      if (success.trim()) {
+        params.set('success', success.trim());
+      }
+      if (start.trim()) {
         params.set('start', start);
+      }
+      if (end.trim()) {
         params.set('end', end);
-      } else if (source.trim()) {
-        url += `/source/${encodeURIComponent(source.trim())}` + (isPaginated ? '/paginated' : '');
-      } else {
-        url += isPaginated ? '/paginated' : '';
+      }
+      if (source.trim()) {
+        params.set('source', source.trim());
+      }
+      if (cMode.trim()) {
+        params.set('cMode', cMode.trim());
       }
 
-      const finalUrl = isPaginated ? `${url}?${params.toString()}` : url;
+      // Use the general search endpoint that supports multiple parameters
+      url += isPaginated ? '/search/paginated' : '/search';
+
+      const finalUrl = `${url}?${params.toString()}`;
       const res = await fetch(finalUrl);
       if (!res.ok) throw new Error(`Request failed: ${res.status}`);
 
@@ -99,6 +112,55 @@ export default function LogNotifications() {
     // Reset to first page on new search
     setPage(0);
     fetchData();
+  };
+
+  const onClear = () => {
+    // Reset all search fields to initial state
+    setPartyId('');
+    setSuccess('');
+    setStart('');
+    setEnd('');
+    setSource('');
+    setCMode('');
+    setPage(0);
+    setError('');
+    // Fetch with initial values (no filters)
+    fetchData();
+  };
+
+  const openStackTraceModal = (stackTrace) => {
+    setSelectedStackTrace(stackTrace || 'No stack trace available');
+    setShowModal(true);
+    setCopySuccess(false);
+  };
+
+  const closeStackTraceModal = () => {
+    setShowModal(false);
+    setSelectedStackTrace('');
+    setCopySuccess(false);
+  };
+
+  const copyToClipboard = async () => {
+    try {
+      await navigator.clipboard.writeText(selectedStackTrace);
+      setCopySuccess(true);
+      setTimeout(() => setCopySuccess(false), 2000);
+    } catch (err) {
+      console.error('Failed to copy text: ', err);
+      // Fallback for older browsers
+      const textArea = document.createElement('textarea');
+      textArea.value = selectedStackTrace;
+      document.body.appendChild(textArea);
+      textArea.select();
+      try {
+        document.execCommand('copy');
+        setCopySuccess(true);
+        setTimeout(() => setCopySuccess(false), 2000);
+      } catch (fallbackErr) {
+        console.error('Fallback copy failed: ', fallbackErr);
+      }
+      document.body.removeChild(textArea);
+    }
   };
 
   const successOptions = [
@@ -160,7 +222,20 @@ export default function LogNotifications() {
             />
           </div>
 
+          <div className="ln-field">
+            <label>cMode</label>
+            <input
+              type="text"
+              value={cMode}
+              onChange={(e) => setCMode(e.target.value)}
+              placeholder="Communication mode"
+            />
+          </div>
+
           <div className="ln-actions">
+            <button className="button" type="button" onClick={onClear} disabled={loading}>
+              Clear
+            </button>
             <button className="button" type="submit" disabled={loading}>
               {loading ? 'Searching…' : 'Search'}
             </button>
@@ -238,7 +313,26 @@ export default function LogNotifications() {
                 <td>{formatDate(r.completedTime)}</td>
                 <td>{formatDate(r.lastUpdateTime)}</td>
                 <td>{String(r.succesfullyProcessed)}</td>
-                <td style={{ textAlign: 'left', maxWidth: 420, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{r.stackTrace}</td>
+                <td style={{ textAlign: 'left', maxWidth: 420 }}>
+                  {r.stackTrace ? (
+                    <div 
+                      style={{ 
+                        cursor: 'pointer', 
+                        overflow: 'hidden', 
+                        textOverflow: 'ellipsis', 
+                        whiteSpace: 'nowrap',
+                        color: '#007bff',
+                        textDecoration: 'underline'
+                      }}
+                      onClick={() => openStackTraceModal(r.stackTrace)}
+                      title="Click to view full stack trace"
+                    >
+                      {r.stackTrace.length > 50 ? `${r.stackTrace.substring(0, 50)}...` : r.stackTrace}
+                    </div>
+                  ) : (
+                    <span style={{ color: '#6c757d', fontStyle: 'italic' }}>No stack trace</span>
+                  )}
+                </td>
               </tr>
             ))}
           </tbody>
@@ -247,6 +341,93 @@ export default function LogNotifications() {
           <div className="ln-footer">{totalElements} total</div>
         )}
       </div>
+
+      {/* Stack Trace Modal */}
+      {showModal && (
+        <div style={{
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          backgroundColor: 'rgba(0, 0, 0, 0.5)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          zIndex: 1000
+        }}>
+          <div style={{
+            backgroundColor: 'white',
+            borderRadius: '8px',
+            padding: '20px',
+            maxWidth: '80%',
+            maxHeight: '80%',
+            width: '600px',
+            boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)',
+            display: 'flex',
+            flexDirection: 'column'
+          }}>
+            <div style={{
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'center',
+              marginBottom: '16px',
+              borderBottom: '1px solid #dee2e6',
+              paddingBottom: '12px'
+            }}>
+              <h3 style={{ margin: 0, color: '#333' }}>Stack Trace</h3>
+              <div style={{ display: 'flex', gap: '8px' }}>
+                <button
+                  onClick={copyToClipboard}
+                  style={{
+                    backgroundColor: copySuccess ? '#28a745' : '#007bff',
+                    color: 'white',
+                    border: 'none',
+                    borderRadius: '4px',
+                    padding: '6px 12px',
+                    cursor: 'pointer',
+                    fontSize: '12px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '4px'
+                  }}
+                >
+                  {copySuccess ? '✓ Copied!' : '📋 Copy'}
+                </button>
+                <button
+                  onClick={closeStackTraceModal}
+                  style={{
+                    backgroundColor: '#6c757d',
+                    color: 'white',
+                    border: 'none',
+                    borderRadius: '4px',
+                    padding: '6px 12px',
+                    cursor: 'pointer',
+                    fontSize: '12px'
+                  }}
+                >
+                  ✕ Close
+                </button>
+              </div>
+            </div>
+            <div style={{
+              flex: 1,
+              overflow: 'auto',
+              backgroundColor: '#f8f9fa',
+              border: '1px solid #dee2e6',
+              borderRadius: '4px',
+              padding: '12px',
+              fontFamily: 'monospace',
+              fontSize: '12px',
+              lineHeight: '1.4',
+              whiteSpace: 'pre-wrap',
+              wordBreak: 'break-word'
+            }}>
+              {selectedStackTrace}
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
