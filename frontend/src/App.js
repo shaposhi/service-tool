@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import './App.css';
 import LogNotifications from './LogNotifications';
 import JobInstances from './JobInstances';
+import JobLogEntries from './JobLogEntries';
 import ColumnMappings from './ColumnMappings';
 import ExcelUpload from './ExcelUpload';
 
@@ -54,6 +55,12 @@ function App() {
           Job Instances
         </button>
         <button
+          className={`tab ${activeTab === 'logs' ? 'active' : ''}`}
+          onClick={() => setActiveTab('logs')}
+        >
+          Job Log Entries
+        </button>
+        <button
           className={`tab ${activeTab === 'mappings' ? 'active' : ''}`}
           onClick={() => setActiveTab('mappings')}
         >
@@ -72,12 +79,11 @@ function App() {
           <>
             <div className="card">
               <h2>Welcome to Service Tools</h2>
-              <p>This is a modern web application built with:</p>
+              <p>Dashboard will be here!!!</p>
               <ul style={{ textAlign: 'left', display: 'inline-block' }}>
-                <li>Java 17</li>
-                <li>Spring Boot 3.2.0</li>
-                <li>React 18</li>
-                <li>Maven for build management</li>
+                <li>Stats will be here!!!</li>
+                <li>Usefull links will be here!!!</li>
+                <li>TBD will be here!!!</li>
               </ul>
 
               <div style={{ marginTop: '30px' }}>
@@ -102,14 +108,6 @@ function App() {
                 </div>
               )}
             </div>
-
-            <div className="card">
-              <h3>Features</h3>
-              <p>✅ Maven build integration</p>
-              <p>✅ React UI served from Spring Boot static folder</p>
-              <p>✅ Hot reloading during development</p>
-              <p>✅ Production-ready build process</p>
-            </div>
           </>
         )}
 
@@ -122,6 +120,12 @@ function App() {
         {activeTab === 'jobs' && (
           <div className="card">
             <JobInstances />
+          </div>
+        )}
+
+        {activeTab === 'logs' && (
+          <div className="card">
+            <JobLogEntries />
           </div>
         )}
 
