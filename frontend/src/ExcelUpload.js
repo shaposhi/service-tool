@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { getApiUrl, API_ENDPOINTS } from './utils/api';
 
 export default function ExcelUpload() {
   const [file, setFile] = useState(null);
@@ -22,7 +23,7 @@ export default function ExcelUpload() {
     form.append('file', file);
     setLoading(true);
     try {
-      const res = await fetch('/api/excel/upload', { method: 'POST', body: form });
+      const res = await fetch(getApiUrl(API_ENDPOINTS.EXCEL_UPLOAD), { method: 'POST', body: form });
       if (!res.ok) throw new Error(`Upload failed: ${res.status}`);
       const json = await res.json();
       setResult(JSON.stringify(json, null, 2));

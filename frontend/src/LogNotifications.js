@@ -1,4 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
+import { getApiUrl, API_ENDPOINTS } from './utils/api';
 
 const DEFAULT_PAGE_SIZE = 10;
 
@@ -39,7 +40,7 @@ export default function LogNotifications() {
     setLoading(true);
     setError('');
     try {
-      let url = '/api/log-notifications';
+      let url = getApiUrl(API_ENDPOINTS.LOG_NOTIFICATIONS);
       let isPaginated = hasPagination;
       const params = new URLSearchParams();
       params.set('page', page.toString());

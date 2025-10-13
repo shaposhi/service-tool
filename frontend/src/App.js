@@ -5,6 +5,8 @@ import JobInstances from './JobInstances';
 import JobLogEntries from './JobLogEntries';
 import ColumnMappings from './ColumnMappings';
 import ExcelUpload from './ExcelUpload';
+import { getApiUrl, API_ENDPOINTS } from './utils/api';
+import Ingester from './Ingester';
 
 function App() {
   const [message, setMessage] = useState('');
@@ -14,7 +16,7 @@ function App() {
   const fetchMessage = async () => {
     setLoading(true);
     try {
-      const response = await fetch('/api/hello');
+      const response = await fetch(getApiUrl(API_ENDPOINTS.HELLO));
       const data = await response.json();
       setMessage(data.message);
     } catch (error) {
@@ -71,6 +73,12 @@ function App() {
           onClick={() => setActiveTab('excel')}
         >
           Excel Upload
+        </button>
+        <button
+          className={`tab ${activeTab === 'ingester' ? 'active' : ''}`}
+          onClick={() => setActiveTab('ingester')}
+        >
+          Ingester
         </button>
       </nav>
 
@@ -139,6 +147,10 @@ function App() {
           <div className="card">
             <ExcelUpload />
           </div>
+        )}
+
+        {activeTab === 'ingester' && (
+          <Ingester />
         )}
       </main>
     </div>
