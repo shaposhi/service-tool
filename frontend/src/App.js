@@ -5,6 +5,7 @@ import JobInstances from './JobInstances';
 import JobLogEntries from './JobLogEntries';
 import ColumnMappings from './ColumnMappings';
 import ExcelUpload from './ExcelUpload';
+import UserMenu from './UserMenu';
 import { getApiUrl, API_ENDPOINTS } from './utils/api';
 import Ingester from './Ingester';
 
@@ -12,6 +13,7 @@ function App() {
   const [message, setMessage] = useState('');
   const [loading, setLoading] = useState(false);
   const [activeTab, setActiveTab] = useState('home');
+  const [user, setUser] = useState(null);
 
   const fetchMessage = async () => {
     setLoading(true);
@@ -27,14 +29,42 @@ function App() {
     }
   };
 
+  const fetchUser = async () => {
+    try {
+      const response = await fetch(getApiUrl(API_ENDPOINTS.USER.CURRENT));
+      if (response.ok) {
+        const userData = await response.json();
+        setUser(userData);
+      }
+    } catch (error) {
+      console.error('Error fetching user:', error);
+    }
+  };
+
+  const handleLogout = async () => {
+    try {
+      const response = await fetch(getApiUrl(API_ENDPOINTS.USER.LOGOUT), { 
+        method: 'POST' 
+      });
+      if (response.ok) {
+        // In a real application, you might want to clear local storage, cookies, etc.
+        window.location.reload();
+      }
+    } catch (error) {
+      console.error('Error logging out:', error);
+    }
+  };
+
   useEffect(() => {
     fetchMessage();
+    fetchUser();
   }, []);
 
   return (
     <div className="App">
       <header className="header">
         <h1>Service Tools Application</h1>
+        <UserMenu user={user} onLogout={handleLogout} />
       </header>
 
       <nav className="tabs">

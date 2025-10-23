@@ -17,5 +17,9 @@ export const API_ENDPOINTS = {
     INGESTER: {
         GET_BY_ID: '/api/ingester/getById',
         PUBLISH: '/api/ingester/publish'
+    },
+    USER: {
+        CURRENT: '/api/user/current',
+        LOGOUT: '/api/user/logout'
     }
 };
