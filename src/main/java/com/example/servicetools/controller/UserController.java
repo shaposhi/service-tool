@@ -26,9 +26,9 @@ public class UserController {
 
     @PostMapping("/logout")
     public ResponseEntity<Void> logout() {
-        // Redirect to www.sinoptic.ua
+        // Redirect to local logout page
         return ResponseEntity.status(302)
-                .header("Location", "https://sinoptik.ua/")
+                .header("Location", "/service-tool/logout.html")
                 .build();
     }
 }
