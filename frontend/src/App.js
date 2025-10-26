@@ -7,6 +7,7 @@ import ColumnMappings from './ColumnMappings';
 import ExcelUpload from './ExcelUpload';
 import UserMenu from './UserMenu';
 import { getApiUrl, API_ENDPOINTS } from './utils/api';
+import { fetchWithRedirect } from './utils/fetchWithRedirect';
 import Ingester from './Ingester';
 
 function App() {
@@ -41,18 +42,13 @@ function App() {
     }
   };
 
-  const handleLogout = async () => {
-    try {
-      const response = await fetch(getApiUrl(API_ENDPOINTS.USER.LOGOUT), { 
-        method: 'POST' 
-      });
-      if (response.ok) {
-        // In a real application, you might want to clear local storage, cookies, etc.
-        window.location.reload();
-      }
-    } catch (error) {
-      console.error('Error logging out:', error);
-    }
+  const handleLogout = () => {
+    // Let the browser handle the redirect natively
+    const form = document.createElement('form');
+    form.method = 'POST';
+    form.action = getApiUrl(API_ENDPOINTS.USER.LOGOUT);
+    document.body.appendChild(form);
+    form.submit();
   };
 
   useEffect(() => {

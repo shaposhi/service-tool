@@ -26,7 +26,9 @@ public class UserController {
 
     @PostMapping("/logout")
     public ResponseEntity<Void> logout() {
-        // Stub implementation
-        return ResponseEntity.ok().build();
+        // Redirect to www.sinoptic.ua
+        return ResponseEntity.status(302)
+                .header("Location", "https://sinoptik.ua/")
+                .build();
     }
 }
